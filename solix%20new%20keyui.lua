@@ -4,6 +4,11 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+local creatorId = game.CreatorId
+print("CreatorId:", creatorId)
+local scriptUrl = getScriptLoaderUrl()
+print("Script URL:", scriptUrl)
+
 local function createNotification(title, content, duration, color, parent)
     duration = duration or 5
     color = color or Color3.fromRGB(255, 188, 254)
@@ -259,6 +264,27 @@ local function main()
     task.delay(1, function()
         notifGui:Destroy()
     end)
+    
+    return true
+end
+
+local function executeScript()
+    local scriptUrl = getScriptLoaderUrl()
+    if not scriptUrl then
+        return false, "Игра не поддерживается"
+    end
+    
+    local success, result = pcall(function()
+        local response = game:HttpGet(scriptUrl)
+        if response:find("<!DOCTYPE html>") then
+            error("Получен HTML-ответ, вероятно, ошибка сервера")
+        end
+        return loadstring(response)()
+    end)
+    
+    if not success then
+        return false, "Не удалось выполнить скрипт: " .. tostring(result)
+    end
     
     return true
 end
